@@ -1,47 +1,77 @@
-# London Underground Pathfinding System
+# London Underground Route Planner & Network Analyser
 
-> A Python software solution for pathfinding in the London Underground network. This project's core focus is on the data engineering and analysis code required to apply shortest-path algorithms to a graph built from Pandas DataFrames.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Python: 3.x](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 
-This repository contains the code for a complete system that can:
-1.  Load and process complex transit data (stations, connections, journey times).
-2.  Construct a graph representation of the network using Pandas.
-3.  Apply pathfinding algorithms (Dijkstra's and SSSP) to this data structure.
-4.  Analyse the performance of these algorithms using synthetic data.
+This is a Python-based route planning tool for the London Underground network. I built this project to implement, compare, and analyse the performance of fundamental graph algorithms for solving real-world network problems.
 
-## 1. Key Features & Technical Implementation
+The tool can find the optimal path between any two stations based on two different metrics:
+1.  **Shortest travel time (minutes)**
+2.  **Fewest number of stations**
 
-* **Pandas-Based Graph Architecture:** The key engineering decision of this project was to leverage **Pandas** for all data manipulation and graph representation. Instead of native Python objects, DataFrames are used to hold the graph of stations and connections, allowing for efficient loading, querying, and processing.
+It also includes a network resilience module to analyse the impact of line closures.
 
-* **Algorithm Application Scripts (`dijkstras.py`, `single_source_shortest_path.py`):** This project contains the necessary code to *apply* standard shortest-path algorithms to the Pandas-based graph. These scripts are not just the algorithms themselves, but the critical "glue code" that makes them usable on this specific data structure.
-    * **`dijkstras.py`:** Applies Dijkstra's algorithm to find the single shortest path between two stations.
-    * **`single_source_shortest_path.py`:** Applies the Single Source Shortest Path algorithm to find all optimal routes from one starting station.
+## 🚀 Key Features
 
-* **Empirical Performance Analysis:** The repository includes a comprehensive performance analysis suite. This code **programmatically generates synthetic data** of varying network sizes, runs the pathfinding algorithms on this data, and uses **Matplotlib** to plot the results, demonstrating the scalability and efficiency of the solution.
+* **Fastest Route (by Time):** Implements **Dijkstra's algorithm** on a weighted graph where edge weights represent the travel time in minutes between stations.
+* **Fewest Stops Route:** Calculates the path with the minimum number of station-to-station hops. This is implemented using two different algorithms for comparison:
+    * **Dijkstra's Algorithm** on an unweighted graph (or with a uniform weight of '1' for each edge).
+    * **Bellman-Ford Algorithm**, which is also capable of detecting negative weight cycles (though none exist in this dataset).
+* **Network Resilience Analysis:** Uses **Kruskal's algorithm** to find a Minimum Spanning Tree (MST) of the entire network. This is used to identify redundant connections that could be removed (e.g., for maintenance) whilst guaranteeing that all stations remain connected to the network.
 
-* **Software Testing:** The solution was developed with a comprehensive testing strategy to ensure the correctness of the data processing and algorithm application.
+## 📊 Core Algorithms & Data Structures
 
-## 2. Technologies & Libraries Used
+This project was an exercise in implementing these concepts from the ground up.
 
-* **Core:** Python
-* **Data Structure & Manipulation:** Pandas (This is the core of the project)
-* **Numerical Analysis:** NumPy
-* **Data Visualisation:** Matplotlib (for performance plots)
-* **Methodology:** Algorithm Application, Data Modelling, Performance Analysis, Software Testing.
+* **Algorithms:**
+    * Dijkstra's (`dijkstras.py`)
+    * Bellman-Ford (`bellman_ford.py`)
+    * Kruskal's (`mst.py`)
+    * Merge Sort (`merge_sort.py`)
+* **Data Structures:**
+    * **Adjacency List** (`adjacency_list_graph.py`): The primary graph representation, chosen for its space efficiency in a sparse network like a transit system.
+    * **Doubly Linked List w/ Sentinel** (`dll_sentinel.py`): Used to implement the adjacency list for efficient $O(1)$ edge insertions/deletions.
+    * **Min-Heap Priority Queue** (`min_heap_priority_queue.py`): A crucial component for the efficiency of Dijkstra's algorithm.
+    * **Disjoint Set Forest** (`disjoint_set_forest.py`): Used for the efficient union-find operations required by Kruskal's algorithm.
+    * **Pandas DataFrame:** Used for initial loading and manipulation of the station data.
 
-## 3. Installation & Usage
+## 📦 Project Structure
+
+london-underground-network-analysis/│├── data/│   └── london_underground_dataset.csv  (or similar data file)│├── src/│   ├── algorithms/│   │   ├── dijkstras.py│   │   ├── bellman_ford.py│   │   ├── mst.py│   │   ├── merge_sort.py│   ││   └── data_structures/│       ├── Graph.py│       ├── adjacency_list_graph.py│       ├── dll_sentinel.py│       ├── min_heap_priority_queue.py│       ├── disjoint_set_forest.py│├── notebooks/│   └── performance_analysis.ipynb│├── main.py                         # Main script to run the application├── requirements.txt                # Project dependencies├── .gitignore├── https://www.google.com/search?q=LICENSE└── README.md
+## ⚙️ Installation
 
 1.  Clone the repository:
-    `git clone https://github.com/w4el/london-underground-pathfinder.git`
-2.  Navigate to the project directory:
-    `cd london-underground-pathfinder`
-3.  Install the required dependencies from the `requirements.txt` file:
-    `pip install -r requirements.txt`
+    ```bash
+    git clone [https://github.com/w4el/london-underground-network-analysis.git](https://github.com/w4el/london-underground-network-analysis.git)
+    cd london-underground-network-analysis
+    ```
+2.  Install the required dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-## 4. How to Use This Project
+## ▶️ Usage
 
-This project provides the core Python modules for pathfinding and analysis.
+The application is run from the command line.
 
-The intended workflow is:
-1.  Use the data-loading functions to read station and connection `.csv` files into Pandas DataFrames.
-2.  Pass these DataFrames to the functions within `dijkstras.py` or `single_source_shortest_path.py` to calculate a route.
-3.  The scripts for performance analysis can be run to generate and plot the efficiency of these algorithms on your data.
+### Find Fastest Route (by Time)
+
+```bash
+python main.py --type time --start "Epping" --end "Amersham"
+Example Output:Shortest path: Go in Central Line in Epping -> ... [Switch to Metropolitan Line at Baker Street] ... -> Amersham
+Total travel time: 100.0 minutes
+Find Fewest StopsBashpython main.py --type stations --start "Bank" --end "Waterloo"
+Example Output:Shortest path (by number of stations): Bank -> ... -> Waterloo
+Total stations in the path: 2 stations
+Run Closure AnalysisBashpython main.py --analyse-closures
+Example Output:Analysis of potential tube line closures:
+Circle line can have the following connections removed:
+- Baker Street
+- Euston Square
+...
+Metropolitan line can have the following connections removed:
+- Baker Street
+- Finchley Road
+...
+All stations remain connected.
+📈 Performance FindingsDijkstra's algorithm demonstrated a near-linear increase in time as the number of stations grew, aligning with its $O(V \log V + E)$ complexity and confirming its suitability for a responsive application.Bellman-Ford's algorithm showed a more pronounced quadratic growth in computation time, consistent with its $O(V \times E)$ complexity.
